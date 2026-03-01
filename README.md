@@ -10,6 +10,7 @@ touchtypr focuses on the characters and patterns you actually type when you code
 
 Built as a standalone `index.html` you can open locally or host on GitHub Pages.
 
+👉 **[Launch touchtypr](https://dimfield-git.github.io/touchtypr/)**
 ---
 
 ## Features
