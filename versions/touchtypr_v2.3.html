@@ -1,0 +1,1476 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>touchtypr — Bash / Python / Rust</title>
+  <style>
+    :root{
+      --bg: #0b0f14;
+      --panel: #0f1620;
+      --panel2:#0c121a;
+      --text:#d8e2f0;
+      --muted:#8ea1bb;
+      --accent:#7dd3fc;
+      --good:#86efac;
+      --bad:#fb7185;
+      --warn:#fbbf24;
+      --border:rgba(255,255,255,.10);
+      --shadow: 0 14px 34px rgba(0,0,0,.45);
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --ui: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+
+      --brandA: var(--accent);
+      --brandB: var(--good);
+      --brandGlow: color-mix(in srgb, var(--accent) 55%, transparent);
+      --brandMode: "futuristic";
+    }
+
+    /* Futuristic — Dark */
+    [data-theme="futuristic-dark"]{
+      --bg:#070b12;
+      --panel:#0b1320;
+      --panel2:#09101a;
+      --text:#e6f0ff;
+      --muted:#98a7c2;
+      --accent:#57d3ff;
+      --good:#7cf2c5;
+      --bad:#ff5c7a;
+      --warn:#ffd166;
+      --border:rgba(87,211,255,.22);
+
+      --brandA:#57d3ff;
+      --brandB:#7cf2c5;
+      --brandGlow: rgba(87,211,255,.45);
+      --brandMode:"futuristic";
+    }
+    /* Futuristic — Light */
+    [data-theme="futuristic-light"]{
+      --bg:#f6fbff;
+      --panel:#ffffff;
+      --panel2:#f2f7ff;
+      --text:#0e1726;
+      --muted:#51627c;
+      --accent:#0077ff;
+      --good:#0aa86f;
+      --bad:#d01244;
+      --warn:#b15d00;
+      --border:rgba(0,119,255,.18);
+      --shadow: 0 12px 28px rgba(2, 24, 56, .12);
+
+      --brandA:#0077ff;
+      --brandB:#0aa86f;
+      --brandGlow: rgba(0,119,255,.25);
+      --brandMode:"futuristic";
+    }
+    /* Cyberpunk — Dark */
+    [data-theme="cyberpunk-dark"]{
+      --bg:#0a0612;
+      --panel:#120a25;
+      --panel2:#0d071c;
+      --text:#ffe9ff;
+      --muted:#c6a6ff;
+      --accent:#ff3bd4;
+      --good:#7cff6b;
+      --bad:#ff3860;
+      --warn:#ffd166;
+      --border:rgba(255,59,212,.26);
+
+      --brandA:#ff3bd4;
+      --brandB:#7cff6b;
+      --brandGlow: rgba(255,59,212,.50);
+      --brandMode:"cyberpunk";
+    }
+    /* Cyberpunk — Light */
+    [data-theme="cyberpunk-light"]{
+      --bg:#fff7fe;
+      --panel:#ffffff;
+      --panel2:#fff0fb;
+      --text:#1b1025;
+      --muted:#6a4e86;
+      --accent:#b000ff;
+      --good:#1a9b45;
+      --bad:#d20b35;
+      --warn:#aa5a00;
+      --border:rgba(176,0,255,.18);
+      --shadow: 0 12px 28px rgba(47, 4, 76, .14);
+
+      --brandA:#b000ff;
+      --brandB:#00e5ff;
+      --brandGlow: rgba(176,0,255,.30);
+      --brandMode:"cyberpunk";
+    }
+    /* Hacker — Dark */
+    [data-theme="hacker-dark"]{
+      --bg:#020602;
+      --panel:#071007;
+      --panel2:#050b05;
+      --text:#d7ffd7;
+      --muted:#7ee27e;
+      --accent:#30ff6a;
+      --good:#30ff6a;
+      --bad:#ff4d6d;
+      --warn:#ffd166;
+      --border:rgba(48,255,106,.22);
+
+      --brandA:#30ff6a;
+      --brandB:#30ff6a;
+      --brandGlow: rgba(48,255,106,.35);
+      --brandMode:"hacker";
+    }
+    /* Hacker — Light */
+    [data-theme="hacker-light"]{
+      --bg:#f6fff8;
+      --panel:#ffffff;
+      --panel2:#effff3;
+      --text:#08180b;
+      --muted:#2f6b39;
+      --accent:#008f3d;
+      --good:#008f3d;
+      --bad:#c3163b;
+      --warn:#9a4f00;
+      --border:rgba(0,143,61,.18);
+      --shadow: 0 12px 28px rgba(2, 44, 16, .12);
+
+      --brandA:#008f3d;
+      --brandB:#00c853;
+      --brandGlow: rgba(0,143,61,.22);
+      --brandMode:"hacker";
+    }
+
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: var(--ui);
+      background:
+        radial-gradient(900px 600px at 20% 10%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 60%),
+        radial-gradient(800px 520px at 85% 20%, color-mix(in srgb, var(--good) 10%, transparent), transparent 55%),
+        var(--bg);
+      color: var(--text);
+      min-height:100vh;
+      display:flex;
+      justify-content:center;
+      align-items:flex-start;
+      padding:22px;
+    }
+
+    .shell{
+      width:min(1280px, 100%);
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
+
+    /* ===== Brand Header (big) ===== */
+    .brandHeader{
+      position: relative;
+      border-radius: 20px;
+      border: 1px solid color-mix(in srgb, var(--brandA) 25%, var(--border));
+      background:
+        linear-gradient(180deg, color-mix(in srgb, var(--panel) 85%, transparent), transparent 70%),
+        color-mix(in srgb, black 10%, transparent);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      padding: 18px 18px 16px;
+    }
+    .brandHeader::before{
+      content:"";
+      position:absolute;
+      inset:-2px;
+      background:
+        radial-gradient(800px 220px at 25% 30%, color-mix(in srgb, var(--brandGlow) 45%, transparent), transparent 60%),
+        radial-gradient(700px 240px at 80% 60%, color-mix(in srgb, var(--good) 12%, transparent), transparent 60%);
+      filter: blur(0px);
+      opacity: .9;
+      pointer-events:none;
+    }
+
+    .brandTitle{
+      position:relative;
+      display:flex;
+      align-items:baseline;
+      justify-content:space-between;
+      gap:14px;
+      flex-wrap:wrap;
+      z-index:1;
+    }
+    .brandWord{
+      font-family: var(--mono);
+      font-weight: 950;
+      letter-spacing: .22em;
+      text-transform: uppercase;
+      font-size: clamp(22px, 3.2vw, 34px);
+      color: transparent;
+      background: linear-gradient(90deg, var(--brandA), var(--brandB), var(--brandA));
+      background-size: 200% 100%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      text-shadow:
+        0 0 18px color-mix(in srgb, var(--brandGlow) 55%, transparent),
+        0 0 38px color-mix(in srgb, var(--brandGlow) 35%, transparent);
+    }
+    .brandTag{
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing:.12em;
+      text-transform: uppercase;
+    }
+
+    /* Futuristic shimmer */
+    [data-theme^="futuristic-"] .brandWord{
+      animation: shimmer 3.2s linear infinite;
+    }
+    @keyframes shimmer{
+      0%{ background-position: 0% 50%; }
+      100%{ background-position: 200% 50%; }
+    }
+
+    /* Cyberpunk neon glow pulse */
+    [data-theme^="cyberpunk-"] .brandWord{
+      animation: neonPulse 1.7s ease-in-out infinite;
+      text-shadow:
+        0 0 10px color-mix(in srgb, var(--brandA) 65%, transparent),
+        0 0 22px color-mix(in srgb, var(--brandA) 45%, transparent),
+        0 0 44px color-mix(in srgb, var(--brandA) 25%, transparent);
+    }
+    @keyframes neonPulse{
+      0%,100%{ filter: brightness(1.0); }
+      50%{ filter: brightness(1.25); }
+    }
+
+    /* Hacker scan + glitch */
+    [data-theme^="hacker-"] .brandHeader{
+      background:
+        repeating-linear-gradient(
+          180deg,
+          color-mix(in srgb, var(--brandA) 9%, transparent),
+          color-mix(in srgb, var(--brandA) 9%, transparent) 2px,
+          transparent 2px,
+          transparent 6px
+        ),
+        linear-gradient(180deg, color-mix(in srgb, var(--panel) 88%, transparent), transparent 70%);
+    }
+    [data-theme^="hacker-"] .brandWord{
+      text-shadow:
+        0 0 14px color-mix(in srgb, var(--brandA) 55%, transparent),
+        0 0 30px color-mix(in srgb, var(--brandA) 35%, transparent);
+      animation: glitch 3.5s steps(1,end) infinite;
+    }
+    @keyframes glitch{
+      0%, 92%, 100% { transform: translate(0,0); }
+      93% { transform: translate(1px,-1px); }
+      94% { transform: translate(-2px,1px); }
+      95% { transform: translate(2px,0px); }
+      96% { transform: translate(-1px,0px); }
+      97% { transform: translate(0px,1px); }
+      98% { transform: translate(1px,0px); }
+    }
+    /* moving scanline */
+    [data-theme^="hacker-"] .brandHeader::after{
+      content:"";
+      position:absolute;
+      left:-10%;
+      right:-10%;
+      height: 14px;
+      top:-20px;
+      background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--brandA) 28%, transparent), transparent);
+      filter: blur(0px);
+      opacity: .8;
+      animation: scan 2.8s linear infinite;
+      pointer-events:none;
+    }
+    @keyframes scan{
+      0%{ transform: translateY(0); }
+      100%{ transform: translateY(140px); }
+    }
+
+    /* ===== App grid ===== */
+    .app{
+      width:100%;
+      display:grid;
+      grid-template-columns: 420px 1fr;
+      gap:16px;
+    }
+    @media (max-width: 1020px){
+      .app{ grid-template-columns: 1fr; }
+    }
+
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.05), transparent 40%), var(--panel);
+      border:1px solid var(--border);
+      border-radius:18px;
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .card h2{
+      margin:0;
+      padding:14px 18px;
+      font-size:13px;
+      letter-spacing:.14em;
+      text-transform:uppercase;
+      color:var(--muted);
+      background: var(--panel2);
+      border-bottom:1px solid var(--border);
+    }
+
+    .content{ padding:16px 18px; }
+
+    .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    .col{ display:flex; flex-direction:column; gap:8px; min-width: 180px; }
+    label{ color:var(--muted); font-size:12px; letter-spacing:.08em; text-transform:uppercase; }
+
+    select, button{ font: inherit; color: var(--text); }
+    select{
+      background: color-mix(in srgb, var(--text) 6%, transparent);
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:10px 12px;
+      outline:none;
+    }
+    select:focus{
+      border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+    }
+    button{
+      background: color-mix(in srgb, var(--accent) 18%, transparent);
+      border:1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+      border-radius:12px;
+      padding:10px 12px;
+      cursor:pointer;
+      transition: transform .06s ease, filter .15s ease;
+      user-select:none;
+    }
+    button:hover{ filter: brightness(1.06); }
+    button:active{ transform: translateY(1px); }
+    button.secondary{
+      background: color-mix(in srgb, var(--text) 8%, transparent);
+      border:1px solid var(--border);
+    }
+    button.danger{
+      background: color-mix(in srgb, var(--bad) 16%, transparent);
+      border:1px solid color-mix(in srgb, var(--bad) 35%, transparent);
+    }
+
+    .pill{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px solid var(--border);
+      background: color-mix(in srgb, var(--text) 6%, transparent);
+    }
+    .stat{
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+      min-width: 96px;
+    }
+    .stat .v{ font-weight:800; font-size:16px; font-family: var(--mono); }
+    .stat .k{ color:var(--muted); font-size:11px; letter-spacing:.10em; text-transform:uppercase; }
+
+    .kbd{ font-family: var(--mono); }
+    .tiny{ color:var(--muted); font-size:12px; }
+    .warn{ color: var(--warn); font-weight:700; }
+
+    .toggle{
+      display:flex; align-items:center; gap:10px;
+      user-select:none;
+      padding:8px 10px;
+      border-radius:12px;
+      border:1px solid var(--border);
+      background: color-mix(in srgb, var(--text) 4%, transparent);
+    }
+    .toggle input{ transform: translateY(1px); }
+
+    .split{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+    }
+    @media (max-width: 520px){
+      .split{ grid-template-columns: 1fr; }
+    }
+
+    .notice{
+      margin-top:10px;
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px solid var(--border);
+      background: color-mix(in srgb, var(--warn) 10%, transparent);
+      color: color-mix(in srgb, var(--warn) 80%, var(--text));
+      font-size:12px;
+    }
+    .monoLine{
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted);
+      margin-top:8px;
+    }
+
+    .hs{
+      margin-top: 12px;
+      border:1px solid var(--border);
+      border-radius:14px;
+      overflow:hidden;
+    }
+    .hs header{
+      padding:10px 12px;
+      background: var(--panel2);
+      border-bottom:1px solid var(--border);
+      color:var(--muted);
+      font-size:12px;
+      letter-spacing:.1em;
+      text-transform:uppercase;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .hs table{
+      width:100%;
+      border-collapse:collapse;
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+    .hs th, .hs td{
+      padding:8px 10px;
+      border-bottom:1px solid var(--border);
+      text-align:left;
+    }
+    .hs tr:last-child td{ border-bottom:none; }
+    .right{ text-align:right; }
+
+    /* Right side layout */
+    .promptWrap{
+      padding:16px 18px;
+      border-top:1px solid var(--border);
+      background: color-mix(in srgb, black 10%, transparent);
+
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      min-height: 72vh;
+    }
+
+    .titlebar{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-end;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+    .badges{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background: color-mix(in srgb, var(--text) 5%, transparent);
+      color: var(--muted);
+      font-size:12px;
+    }
+    .badge strong{ color: var(--accent); font-family: var(--mono); }
+
+    /* Display arena */
+    .codebox{
+      flex: 1 1 auto;
+      border:1px solid var(--border);
+      border-radius:14px;
+      background: color-mix(in srgb, black 15%, transparent);
+      padding:16px;
+      overflow:auto;
+    }
+
+    /* Viewport lines + wrap */
+    .viewport{
+      font-family: var(--mono);
+      font-size: 16px;
+      line-height: 1.55;
+      margin:0;
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+    .vline{
+      padding: 8px 10px;
+      border-radius: 12px;
+      border: 1px solid transparent;
+      background: transparent;
+    }
+    .vline.other{ opacity: .72; }
+    .vline.current{
+      border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+      background: color-mix(in srgb, var(--accent) 10%, transparent);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 10%, transparent);
+    }
+    .vline .ok{ color: var(--good); }
+    .vline .bad{ color: var(--bad); text-decoration: underline wavy color-mix(in srgb, var(--bad) 85%, transparent); }
+    .vline .todo{ color: var(--text); }
+
+    /* Input pinned to bottom */
+    textarea{
+      width:100%;
+      min-height: 160px;
+      resize: vertical;
+      padding:14px;
+      border-radius:14px;
+      border:1px solid var(--border);
+      background: color-mix(in srgb, var(--text) 5%, transparent);
+      color: var(--text);
+      outline:none;
+      font-size: 16px;
+      line-height: 1.55;
+      font-family: var(--mono);
+      margin-top: auto;
+    }
+    textarea:focus{
+      border-color: color-mix(in srgb, var(--accent) 60%, transparent);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+    }
+  </style>
+</head>
+
+<body data-theme="futuristic-dark">
+  <div class="shell">
+
+    <!-- BIG BRAND HEADER -->
+    <div class="brandHeader">
+      <div class="brandTitle">
+        <div class="brandWord">touchtypr</div>
+        <div class="brandTag">touch typing for Bash • Python • Rust — modes: symbols / tokens / scripts</div>
+      </div>
+    </div>
+
+    <!-- APP -->
+    <div class="app">
+
+      <!-- LEFT -->
+      <div class="card">
+        <h2>Training Setup</h2>
+        <div class="content">
+
+          <div class="split">
+            <div class="col">
+              <label>Language</label>
+              <select id="lang">
+                <option value="bash">Bash</option>
+                <option value="python">Python</option>
+                <option value="rust">Rust</option>
+              </select>
+            </div>
+
+            <div class="col">
+              <label>Mode</label>
+              <select id="mode">
+                <option value="symbols">1) Symbols</option>
+                <option value="tokens">2) Tokens</option>
+                <option value="scripts">3) Scripts</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="split" style="margin-top:12px;">
+            <div class="col">
+              <label>Theme</label>
+              <select id="theme">
+                <option value="futuristic-dark">Futuristic (Dark)</option>
+                <option value="futuristic-light">Futuristic (Light)</option>
+                <option value="cyberpunk-dark">Cyberpunk (Dark)</option>
+                <option value="cyberpunk-light">Cyberpunk (Light)</option>
+                <option value="hacker-dark">Hacker (Dark)</option>
+                <option value="hacker-light">Hacker (Light)</option>
+              </select>
+            </div>
+
+            <div class="col">
+              <label>Timer</label>
+              <select id="duration">
+                <option value="60">60s</option>
+                <option value="120">120s</option>
+                <option value="180" selected>180s</option>
+                <option value="300">300s</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row" style="margin-top:12px;">
+            <label class="toggle">
+              <input type="checkbox" id="adaptive" checked />
+              <span class="tiny">Adaptive difficulty</span>
+            </label>
+
+            <label class="toggle" title="Strict means you must match newlines exactly. Recommended for scripts.">
+              <input type="checkbox" id="strictNL" checked />
+              <span class="tiny">Strict newlines</span>
+            </label>
+          </div>
+
+          <div class="row" style="margin-top:12px;">
+            <button id="btnNew">New prompt</button>
+            <button class="secondary" id="btnRestart">Restart</button>
+            <button class="danger" id="btnClearHS" title="Clears high scores for current language+mode">Clear HS</button>
+          </div>
+
+          <div class="pill" style="margin-top:12px;">
+            <div class="stat">
+              <div class="v" id="stScore">0</div>
+              <div class="k">Score</div>
+            </div>
+            <div class="stat">
+              <div class="v" id="stWpm">0</div>
+              <div class="k">WPM</div>
+            </div>
+            <div class="stat">
+              <div class="v" id="stAcc">100%</div>
+              <div class="k">Accuracy</div>
+            </div>
+            <div class="stat">
+              <div class="v" id="stTime">180</div>
+              <div class="k">Seconds</div>
+            </div>
+          </div>
+
+          <div class="notice" id="rules"></div>
+          <div class="monoLine" id="difficultyLine"></div>
+
+          <div class="hs">
+            <header>
+              <span>High Scores (per language + mode)</span>
+              <span class="tiny" id="hsKey"></span>
+            </header>
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>When</th>
+                  <th class="right">Score</th>
+                </tr>
+              </thead>
+              <tbody id="hsBody"></tbody>
+            </table>
+          </div>
+
+          <div class="tiny" style="margin-top:12px;">
+            Controls: <span class="kbd">Esc</span> restart • <span class="kbd">Ctrl/Cmd + Enter</span> new prompt
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT -->
+      <div class="card">
+        <h2>Prompt + Input</h2>
+        <div class="promptWrap">
+          <div class="titlebar">
+            <div class="badges">
+              <span class="badge">Language: <strong id="bLang">bash</strong></span>
+              <span class="badge">Mode: <strong id="bMode">symbols</strong></span>
+              <span class="badge">Difficulty: <strong id="bDiff">2</strong></span>
+              <span class="badge">Target chars: <strong id="bLen">0</strong></span>
+            </div>
+            <div class="tiny">Tokens now generated as longer “statement lines” (less repetition)</div>
+          </div>
+
+          <div class="codebox">
+            <div class="viewport" id="render"></div>
+          </div>
+
+          <textarea id="input" spellcheck="false" autocomplete="off" autocapitalize="off"
+            placeholder="Click here and start typing…"></textarea>
+
+          <div class="tiny" id="endBanner"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+<script>
+(() => {
+  /* =======================
+     DATA
+     ======================= */
+
+  const SYMBOLS = {
+    bash: {
+      set: '()[]{}<>|&;:,.!?\'"\\`\\\\$#@~^%*_-+=/\\t',
+      combos: [
+        ["$", '"', "'", "\\", "|", "&", ";"],
+        ["$(", ")", "[[", "]]", "{", "}", "&&", "||", ">>", "2>", "&>"],
+        ["${", ":-", ":=", ":?", "#", "##", "%", "%%", "<<", "<<-", "<<<"],
+        ["<(", ")", "|", "xargs -0", "-print0", "IFS=$'\\n\\t'", "set -euo pipefail"],
+      ],
+    },
+    python: {
+      set: '()[]{}<>|&;:,.!?\'"\\`\\\\$#@~^%*_-+=/\\t',
+      combos: [
+        [":", "=", ",", ".", "()", "[]", "{}"],
+        ["->", "**", "//", "!=", "==", ">=", "<=", "+=", "-=", "*=", "/="],
+        ['f"', "{}", 'r"', '"""', "...", "|", "&", "@decorator", "lambda:"],
+        ["dict[str, int]", "tuple[str, str] | None", "@dataclass(frozen=True)", '__name__ == "__main__"'],
+      ],
+    },
+    rust: {
+      set: '()[]{}<>|&;:,.!?\'"\\`\\\\$#@~^%*_-+=/\\t',
+      combos: [
+        ["::", ";", ",", ".", "()", "{}"],
+        ["->", "=>", "!=", "==", ">=", "<=", "+=", "-=", "*=", "/="],
+        ["&", "&mut", "*const", "*mut", "::<T>", "<'a>", "?", "!", "|_|"],
+        ["Result<T, E>", "Option<T>", "impl Trait", "where T:", "match {}", "#[derive(Debug, Clone)]"],
+      ],
+    },
+  };
+
+  // Expanded token banks so it does NOT look like last version.
+  const TOKENS = {
+    bash: [
+      [
+        `cd ..`, `cd -`, `pwd`, `ls -la`, `ls -lah --color=auto`,
+        `echo "hello"`, `printf "%s\\n" "$x"`, `cat file.txt`, `head -n 20 file.txt`, `tail -f app.log`,
+        `mkdir -p build`, `rm -rf target/`, `cp -a src/ dst/`, `mv a b`, `ln -s ./bin/tool tool`,
+        `chmod +x script.sh`, `chown -R "$USER":"$USER" .`,
+        `export PATH="$PATH:/opt/bin"`, `export FOO="bar"`,
+      ],
+      [
+        `rg -n --hidden "TODO|FIXME" .`, `rg -S "unsafe" src/`, `fd -H "\\.rs$" .`,
+        `find . -type f -name "*.rs"`, `find . -maxdepth 2 -type d`,
+        `jq -r '.items[] | .name'`, `jq -r '.[] | select(.ok==true) | .id'`,
+        `sed 's/\\t/ /g'`, `sed -E 's/[[:space:]]+$//'`,
+        `awk -F',' '{print $1,$3}'`, `awk '{print NR ":" $0}'`,
+        `sort -u`, `sort -u | tee out.txt`, `wc -l`, `xargs -0 -n 1`,
+      ],
+      [
+        `if [[ -z "\${1:-}" ]]; then exit 2; fi`,
+        `for f in *.log; do [[ -f "$f" ]] || continue; done`,
+        `curl -fsSL "$URL" | jq -r '.items[] | .name'`,
+        `tar -czf backup-$(date +%F).tar.gz --exclude='.git' .`,
+        `trap 'echo "failed at line $LINENO" >&2' ERR`,
+      ],
+      [
+        `set -euo pipefail; IFS=$'\\n\\t'`,
+        `mapfile -t files < <(find "$path" -type f -print)`,
+        `while IFS= read -r line; do printf '%s\\n' "$line"; done < input.txt`,
+        `comm -12 <(sort a) <(sort b)`,
+        `diff -u old new | sed -n '1,120p'`,
+      ],
+    ],
+    python: [
+      [
+        `for i in range(10): print(i)`, `for x in xs: total += x`,
+        `items = [1, 2, 3]`, `items.append(x)`, `items = [x for x in xs if x >= 0]`,
+        `d = {"a": 1, "b": 2}`, `d.get("k", 0)`, `d.setdefault(k, 0)`,
+        `print(f"n={n}")`, `print("ok", file=sys.stderr)`, `assert x >= 0`,
+        `if x is None: pass`, `if not line: continue`,
+      ],
+      [
+        `from dataclasses import dataclass`, `from typing import Iterable, Iterator`,
+        `out: dict[str, str] = {}`, `out[k] = v`, `out |= other`,
+        `k, _, v = line.partition("=")`, `k, v = line.split("=", 1)`,
+        `return sum(i for i in xs if i >= 0)`, `return [f(x) for x in xs]`,
+        `pat = re.compile(r"^\\w+\\s*=\\s*.+$")`, `m = pat.match(line)`,
+      ],
+      [
+        `@dataclass(frozen=True)`, `def parse(line: str) -> tuple[str, str] | None:`,
+        `return (m["key"], m["val"]) if m else None`,
+        `d = {k: v for k, v in items if v % 2 == 1}`,
+        `if __name__ == "__main__": main()`,
+        `raise ValueError(f"bad: {x=}")`,
+      ],
+      [
+        `def parse_env(text: str) -> dict[str, str]:`,
+        `for line in text.splitlines():`,
+        `if not line or line.startswith("#"): continue`,
+        `typing: Iterable[Item]`,
+        `with open(path) as f:`,
+        `json.loads(s)`,
+      ],
+    ],
+    rust: [
+      [
+        `let x: i32 = 42;`, `let mut n = 0usize;`, `let s = String::from("hi");`,
+        `fn f(x: i32) -> i32 { x + 1 }`, `fn main() { println!("ok"); }`,
+        `for i in 0..10 { println!("{i}"); }`,
+        `use std::path::Path;`, `use std::fs;`, `use std::io::{self, Read};`,
+        `let (k, v) = line.split_once('=')?;`,
+        `if let Some(v) = opt { /* ... */ }`,
+      ],
+      [
+        `use std::collections::HashMap;`,
+        `*m.entry(k).or_insert(0) += 1;`,
+        `let mut m: HashMap<String, usize> = HashMap::new();`,
+        `m.insert(k.to_string(), 1);`,
+        `let v = m.get("k").copied().unwrap_or(0);`,
+        `let it = xs.iter().filter(|x| x.is_ok());`,
+      ],
+      [
+        `#[derive(Debug, Clone)]`,
+        `enum Msg { Ping, Data(Vec<u8>), Quit }`,
+        `items.iter().filter(|i| i.value >= 0).sum()`,
+        `match msg { Msg::Ping => Ok(()), _ => Err("nope".into()) }`,
+        `let out: Result<_, _> = input.parse::<i32>();`,
+        `let s = format!("x={x:?}");`,
+      ],
+      [
+        `fn read_file(p: &std::path::Path) -> anyhow::Result<String> {`,
+        `std::fs::read_to_string(p).with_context(|| format!("read {:?}", p))`,
+        `Msg::Data(v) if v.is_empty() => Err("empty".into()),`,
+        `Msg::Data(_) => Ok(()), Msg::Quit => Err("quit".into()),`,
+        `let bytes = std::fs::read(p)?;`,
+        `let json: serde_json::Value = serde_json::from_str(&s)?;`,
+      ],
+    ],
+  };
+
+  const SCRIPTS = {
+    bash: [
+`#!/usr/bin/env bash
+# Count TODO/FIXME markers in a tree.
+# Usage: ./todo_count.sh <path>
+set -euo pipefail
+
+path="\${1:-.}"
+rg -n "TODO|FIXME" "$path" | wc -l`,
+`#!/usr/bin/env bash
+# Safe backup (tar + checksum).
+set -euo pipefail
+
+name="backup-$(date +%F).tar.gz"
+tar -czf "$name" --exclude='.git' --exclude='target' .
+sha256sum "$name" > "$name.sha256"
+echo "Wrote $name and $name.sha256"`,
+`#!/usr/bin/env bash
+# Normalize CSV: keep column 1 and 3, unique sort.
+set -euo pipefail
+
+in="\${1:?usage: $0 <file.csv>}"
+awk -F',' '{print $1,$3}' "$in" | sed 's/\\t/ /g' | sort -u`,
+    ],
+    python: [
+`# Parse KEY=VALUE lines (ignores comments) into a dict.
+def parse_env(text: str) -> dict[str, str]:
+    out: dict[str, str] = {}
+    for line in text.splitlines():
+        if not line or line.startswith("#"):
+            continue
+        k, _, v = line.partition("=")
+        out[k.strip()] = v.strip()
+    return out`,
+`# Compute total for non-negative values (dataclass + typing).
+from dataclasses import dataclass
+from typing import Iterable
+
+@dataclass(frozen=True)
+class Item:
+    name: str
+    value: int
+
+def total(items: Iterable[Item]) -> int:
+    return sum(i.value for i in items if i.value >= 0)`,
+`# Small CLI: clamp a number into [0..1] and print.
+import sys
+
+def clamp(x: float, lo: float = 0.0, hi: float = 1.0) -> float:
+    return lo if x < lo else hi if x > hi else x
+
+x = float(sys.argv[1])
+print(f"{clamp(x):.6f}")`,
+    ],
+    rust: [
+`// Parse k=v into trimmed (&str, &str).
+fn parse_kv(line: &str) -> Option<(&str, &str)> {
+    let (k, v) = line.split_once('=')?;
+    Some((k.trim(), v.trim()))
+}`,
+`// Tally strings into a HashMap<String, usize>.
+use std::collections::HashMap;
+
+fn tally(xs: &[&str]) -> HashMap<String, usize> {
+    let mut m = HashMap::new();
+    for &x in xs {
+        *m.entry(x.to_string()).or_insert(0) += 1;
+    }
+    m
+}`,
+`// Match-based handler with guard.
+enum Msg { Ping, Data(Vec<u8>), Quit }
+
+fn handle(m: Msg) -> Result<(), String> {
+    match m {
+        Msg::Ping => Ok(()),
+        Msg::Data(v) if v.is_empty() => Err("empty".into()),
+        Msg::Data(_) => Ok(()),
+        Msg::Quit => Err("quit".into()),
+    }
+}`,
+    ],
+  };
+
+  /* =======================
+     ELEMENTS / STATE
+     ======================= */
+
+  const el = {
+    lang: document.getElementById("lang"),
+    mode: document.getElementById("mode"),
+    theme: document.getElementById("theme"),
+    duration: document.getElementById("duration"),
+    adaptive: document.getElementById("adaptive"),
+    strictNL: document.getElementById("strictNL"),
+    btnNew: document.getElementById("btnNew"),
+    btnRestart: document.getElementById("btnRestart"),
+    btnClearHS: document.getElementById("btnClearHS"),
+    stScore: document.getElementById("stScore"),
+    stWpm: document.getElementById("stWpm"),
+    stAcc: document.getElementById("stAcc"),
+    stTime: document.getElementById("stTime"),
+    rules: document.getElementById("rules"),
+    difficultyLine: document.getElementById("difficultyLine"),
+    hsKey: document.getElementById("hsKey"),
+    hsBody: document.getElementById("hsBody"),
+    bLang: document.getElementById("bLang"),
+    bMode: document.getElementById("bMode"),
+    bDiff: document.getElementById("bDiff"),
+    bLen: document.getElementById("bLen"),
+    render: document.getElementById("render"),
+    input: document.getElementById("input"),
+    endBanner: document.getElementById("endBanner"),
+  };
+
+  let target = "";
+  let startedAt = null;
+  let remaining = parseInt(el.duration.value, 10);
+  let timer = null;
+  let finished = false;
+
+  let score = 0;
+  let backspacePenalty = 0;
+  let correctChars = 0;
+  let typedChars = 0;
+
+  let difficulty = 2;
+
+  function missKey(lang){ return `touchtypr:miss:${lang}`; }
+  function loadMisses(lang){
+    try { return JSON.parse(localStorage.getItem(missKey(lang)) || "{}"); }
+    catch { return {}; }
+  }
+  function saveMisses(lang, obj){
+    localStorage.setItem(missKey(lang), JSON.stringify(obj));
+  }
+
+  function keyHS(lang, mode){ return `touchtypr:hs:${lang}:${mode}`; }
+  function keyPerf(lang, mode){ return `touchtypr:perf:${lang}:${mode}`; }
+
+  function loadHS(lang, mode){
+    const raw = localStorage.getItem(keyHS(lang, mode));
+    try { return raw ? JSON.parse(raw) : []; } catch { return []; }
+  }
+  function saveHS(lang, mode, list){
+    localStorage.setItem(keyHS(lang, mode), JSON.stringify(list));
+  }
+  function renderHS(){
+    const lang = el.lang.value;
+    const mode = el.mode.value;
+    el.hsKey.textContent = `${lang} / ${mode}`;
+    const list = loadHS(lang, mode);
+    el.hsBody.innerHTML = list.map((x, i) => `
+      <tr>
+        <td>${i+1}</td>
+        <td>${escapeHtml(x.when)}</td>
+        <td class="right">${x.score}</td>
+      </tr>
+    `).join("") || `<tr><td colspan="3" class="tiny">No scores yet.</td></tr>`;
+  }
+  function pushScoreToHS(finalScore){
+    if (finalScore <= 0) return;
+    const lang = el.lang.value;
+    const mode = el.mode.value;
+    const list = loadHS(lang, mode);
+    const when = new Date().toISOString().slice(0,19).replace("T"," ");
+    list.push({ when, score: finalScore });
+    list.sort((a,b) => b.score - a.score);
+    saveHS(lang, mode, list.slice(0, 10));
+    renderHS();
+  }
+
+  function loadPerf(){
+    const raw = localStorage.getItem(keyPerf(el.lang.value, el.mode.value));
+    try { return raw ? JSON.parse(raw) : { diff: 2, lastAcc: 1, lastWpm: 0 }; }
+    catch { return { diff: 2, lastAcc: 1, lastWpm: 0 }; }
+  }
+  function savePerf(obj){
+    localStorage.setItem(keyPerf(el.lang.value, el.mode.value), JSON.stringify(obj));
+  }
+
+  function setTheme(){ document.body.setAttribute("data-theme", el.theme.value); }
+
+  function normalizeNewlines(s){ return s.replace(/\r\n/g,"\n").replace(/\r/g,"\n"); }
+  function clampInt(x, lo, hi){ return Math.max(lo, Math.min(hi, x|0)); }
+  function pick(arr){ return arr[Math.floor(Math.random() * arr.length)]; }
+
+  function escapeHtml(s){
+    return s
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
+  function weightedPickChar(pool, weights){
+    if (!weights || Object.keys(weights).length === 0){
+      return pool[Math.floor(Math.random() * pool.length)];
+    }
+    const expanded = [];
+    for (const ch of pool){
+      const w = 1 + Math.min(8, (weights[ch] || 0));
+      for (let i=0;i<w;i++) expanded.push(ch);
+    }
+    return expanded[Math.floor(Math.random() * expanded.length)];
+  }
+
+  /* =======================
+     GENERATORS (REQUESTED FIXES)
+     ======================= */
+
+  function generateSymbols(lang, diff){
+    // SAME as v1.2 but with 4 fewer lines
+    const baseSymbols = SYMBOLS[lang].set;
+    const combos = SYMBOLS[lang].combos[Math.max(0, diff-1)];
+
+    const letters = "abcdefghijklmnopqrstuvwxyz";
+    const LETTERS = letters + letters.toUpperCase();
+    const digits = "0123456789";
+    const spaceBias = "     ";
+    const pool = LETTERS + digits + baseSymbols + spaceBias;
+
+    // Reduced by 4 lines total compared to previous tuning:
+    const lines = (8 + diff * 2) - 4;    // now 6..12
+    const width = 64 + diff * 8;         // still long
+    const injectsPerLine = diff <= 2 ? 1 : 2;
+
+    const weights = el.adaptive.checked ? loadMisses(lang) : {};
+
+    let out = "";
+    for (let l=0; l<lines; l++){
+      let line = "";
+      for (let i=0; i<width; i++){
+        line += weightedPickChar(pool, weights);
+      }
+      for (let k=0; k<injectsPerLine; k++){
+        const combo = pick(combos);
+        const pos = Math.floor(Math.random() * Math.max(1, line.length-1));
+        line = line.slice(0,pos) + combo + line.slice(pos);
+      }
+      out += line + (l === lines-1 ? "" : "\n");
+    }
+    return out;
+  }
+
+  function shorten(s, maxLen){
+    if (s.length <= maxLen) return s;
+    return s.slice(0, maxLen-1) + "…";
+  }
+
+  function pickNoRepeat(bank, recentSet){
+    for (let i=0;i<10;i++){
+      const cand = pick(bank);
+      if (!recentSet.has(cand)) return cand;
+    }
+    return pick(bank);
+  }
+
+  function composeTokenLine(lang, diff, bank, recent){
+    // Big visible difference: compose “statement-sized” lines from multiple snippets.
+    const maxLen = 92 + diff * 6; // long lines
+    const a = pickNoRepeat(bank, recent);
+    const b = pickNoRepeat(bank, recent);
+
+    const sepA = (lang === "bash") ? (diff >= 3 ? " | " : " && ")
+              : (lang === "python") ? (diff >= 3 ? " ; " : "  ")
+              : (diff >= 3 ? "  " : " ");
+
+    let s = `${a}${sepA}${b}`;
+
+    if (diff >= 2){
+      const c = pickNoRepeat(bank, recent);
+      const sepB = (lang === "bash") ? " | " : (lang === "python") ? " ; " : "  ";
+      s = `${s}${sepB}${c}`;
+    }
+    if (diff >= 4){
+      const d = pickNoRepeat(bank, recent);
+      const sepC = (lang === "bash") ? " && " : (lang === "python") ? " ; " : "  ";
+      s = `${s}${sepC}${d}`;
+    }
+
+    return shorten(s, maxLen);
+  }
+
+  function generateTokens(lang, diff){
+    // Fewer lines than before + longer composed lines + bigger banks => looks clearly different
+    const sets = TOKENS[lang];
+    const idx = clampInt(diff-1, 0, sets.length-1);
+    const bank = sets[idx];
+
+    const lines = 7 + diff;  // 8..11 (less wall)
+    let out = "";
+
+    const recent = new Set();
+    const recentQueue = [];
+    const remember = (s) => {
+      recent.add(s);
+      recentQueue.push(s);
+      if (recentQueue.length > 10){
+        const old = recentQueue.shift();
+        recent.delete(old);
+      }
+    };
+
+    for (let i=0;i<lines;i++){
+      let line = composeTokenLine(lang, diff, bank, recent);
+
+      // One signature “midline” that screams “this is tokens”
+      if (i === Math.floor(lines/2)){
+        if (lang === "rust") line = shorten(`match msg { Msg::Ping => Ok(()), _ => Err("nope".into()) }`, 110);
+        if (lang === "bash") line = shorten(`set -euo pipefail; IFS=$'\\n\\t' && rg -n "TODO|FIXME" . | wc -l`, 110);
+        if (lang === "python") line = shorten(`if __name__ == "__main__": main(); print(f"ok={ok}")`, 110);
+      }
+
+      remember(line);
+      out += line + (i === lines-1 ? "" : "\n");
+    }
+
+    return out;
+  }
+
+  function generateScript(lang, diff){
+    // Leave scripts exactly as you liked them
+    const bank = SCRIPTS[lang];
+    if (diff <= 2) return pick(bank);
+
+    const a = pick(bank);
+    let b = pick(bank);
+    if (b === a) b = pick(bank);
+    const sep = lang === "python"
+      ? `\n\n# ---\n# Next snippet\n# ---\n\n`
+      : lang === "rust"
+        ? `\n\n// ---\n// Next snippet\n// ---\n\n`
+        : `\n\n# ---\n# Next snippet\n# ---\n\n`;
+    return a + sep + b;
+  }
+
+  function getTarget(){
+    const lang = el.lang.value;
+    const mode = el.mode.value;
+    let t = "";
+    if (mode === "symbols") t = generateSymbols(lang, difficulty);
+    else if (mode === "tokens") t = generateTokens(lang, difficulty);
+    else t = generateScript(lang, difficulty);
+    return normalizeNewlines(t);
+  }
+
+  /* =======================
+     DIFF / SCORING
+     ======================= */
+
+  function computeStrict(typed, tgt){ return typed === tgt; }
+  function computeLoose(typed, tgt){
+    const norm = (x) => normalizeNewlines(x).split("\n").map(line => line.replace(/[ \t]+$/g,"")).join("\n");
+    return norm(typed) === norm(tgt);
+  }
+
+  function applyRulesText(){
+    const mode = el.mode.value;
+    const lang = el.lang.value;
+    const modeRules = {
+      symbols: `Mode 1 (Symbols): language-shaped symbol family + letters. <b>No backspace.</b> Correct char = points. Wrong char = 0 points.`,
+      tokens:  `Mode 2 (Tokens): composed statement-lines from real idioms. <b>No backspace.</b> Correct char = points. Wrong char = 0 points.`,
+      scripts: `Mode 3 (Scripts): useful scripts + comments. Backspace allowed, but <b>each backspace costs points</b>.`
+    };
+    el.rules.innerHTML = `${modeRules[mode]}<br><span class="tiny">Language: <span class="kbd">${lang}</span></span>`;
+  }
+
+  function applyDifficultyLine(){
+    el.bDiff.textContent = String(difficulty);
+    el.difficultyLine.textContent =
+      `Difficulty is ${difficulty}/4.` +
+      (el.adaptive.checked ? ` Adaptive ON (adjusts after each run).` : ` Adaptive OFF (fixed).`);
+  }
+
+  function updateMetricsDisplay(){
+    const acc = typedChars === 0 ? 1 : correctChars / typedChars;
+    el.stAcc.textContent = `${Math.floor(acc*100)}%`;
+
+    const elapsedMs = startedAt ? (performance.now() - startedAt) : 0;
+    const minutes = Math.max(elapsedMs / 60000, 1/60000);
+    const wpm = Math.floor(((correctChars / 5) / minutes));
+    el.stWpm.textContent = String(isFinite(wpm) ? wpm : 0);
+
+    const finalScore = Math.max(0, score - backspacePenalty);
+    el.stScore.textContent = String(finalScore);
+  }
+
+  function renderDiff(){
+    const typed = normalizeNewlines(el.input.value);
+
+    const tgtLines = target.split("\n");
+    const typLines = typed.split("\n");
+    const curLineIdx = Math.min(Math.max(0, typLines.length - 1), tgtLines.length - 1);
+
+    let html = "";
+    for (let li = 0; li < tgtLines.length; li++){
+      const line = tgtLines[li] ?? "";
+
+      if (li !== curLineIdx){
+        html += `<div class="vline other">${escapeHtml(line)}</div>`;
+        continue;
+      }
+
+      const typedCur = (typLines[li] ?? "");
+      let curOut = "";
+
+      for (let i = 0; i < line.length; i++){
+        const tc = typedCur[i];
+        const pc = line[i];
+        if (tc === undefined){
+          curOut += `<span class="todo">${escapeHtml(pc)}</span>`;
+        } else if (tc === pc){
+          curOut += `<span class="ok">${escapeHtml(pc)}</span>`;
+        } else {
+          curOut += `<span class="bad">${escapeHtml(pc)}</span>`;
+        }
+      }
+      if (typedCur.length > line.length){
+        curOut += `<span class="bad">${escapeHtml(typedCur.slice(line.length))}</span>`;
+      }
+
+      html += `<div class="vline current" id="currentLine">${curOut}</div>`;
+    }
+
+    el.render.innerHTML = html;
+
+    const curEl = document.getElementById("currentLine");
+    if (curEl){
+      curEl.scrollIntoView({ block: "center" });
+    }
+
+    const done = el.strictNL.checked ? computeStrict(typed, target) : computeLoose(typed, target);
+    if (!finished && done && typed.length > 0){
+      endRun("Completed!");
+    }
+  }
+
+  function modeAllowsBackspace(){ return el.mode.value === "scripts"; }
+
+  function stopTimer(){
+    if (timer) clearInterval(timer);
+    timer = null;
+  }
+
+  function startTimer(){
+    stopTimer();
+    timer = setInterval(() => {
+      if (!startedAt || finished) return;
+      remaining -= 1;
+      if (remaining <= 0){
+        remaining = 0;
+        el.stTime.textContent = "0";
+        endRun("Time!");
+      } else {
+        el.stTime.textContent = String(remaining);
+      }
+    }, 1000);
+  }
+
+  function applyAdaptiveAfterRun(){
+    const acc = typedChars === 0 ? 1 : (correctChars / typedChars);
+    if (acc >= 0.975 && difficulty < 4) difficulty += 1;
+    if (acc <= 0.90 && difficulty > 1) difficulty -= 1;
+  }
+
+  function endRun(reason){
+    finished = true;
+    stopTimer();
+    el.input.blur();
+    el.input.disabled = true;
+
+    const finalScore = Math.max(0, score - backspacePenalty);
+    el.stScore.textContent = String(finalScore);
+
+    el.endBanner.innerHTML = `<span class="warn">${escapeHtml(reason)}</span> Run ended. Saved score: <span class="kbd">${finalScore}</span>`;
+    pushScoreToHS(finalScore);
+
+    if (el.adaptive.checked){
+      applyAdaptiveAfterRun();
+    }
+
+    const acc = typedChars === 0 ? 1 : (correctChars / typedChars);
+    const wpm = parseInt(el.stWpm.textContent, 10) || 0;
+    savePerf({ diff: difficulty, lastAcc: acc, lastWpm: wpm });
+    applyDifficultyLine();
+  }
+
+  function resetRunState(){
+    stopTimer();
+    finished = false;
+    startedAt = null;
+    remaining = parseInt(el.duration.value, 10);
+
+    score = 0;
+    backspacePenalty = 0;
+    correctChars = 0;
+    typedChars = 0;
+
+    el.stTime.textContent = String(remaining);
+    el.stScore.textContent = "0";
+    el.stWpm.textContent = "0";
+    el.stAcc.textContent = "100%";
+    el.endBanner.textContent = "";
+
+    el.input.disabled = false;
+  }
+
+  function newPrompt(){
+    resetRunState();
+
+    const perf = loadPerf();
+    if (el.adaptive.checked){
+      difficulty = clampInt(perf.diff ?? 2, 1, 4);
+    }
+
+    target = getTarget();
+
+    el.bLang.textContent = el.lang.value;
+    el.bMode.textContent = el.mode.value;
+    el.bLen.textContent = String(target.length);
+
+    applyRulesText();
+    applyDifficultyLine();
+
+    el.input.value = "";
+    el.input.focus();
+
+    renderDiff();
+    renderHS();
+  }
+
+  function restart(){
+    resetRunState();
+    el.input.value = "";
+    el.input.focus();
+    renderDiff();
+  }
+
+  function clearHS(){
+    localStorage.removeItem(keyHS(el.lang.value, el.mode.value));
+    renderHS();
+  }
+
+  function onKeyDown(e){
+    if (finished) return;
+
+    if (e.key === "Backspace" && !modeAllowsBackspace()){
+      e.preventDefault();
+      return;
+    }
+
+    if (e.key === "Backspace" && modeAllowsBackspace()){
+      if (el.input.value.length > 0){
+        backspacePenalty += 1;
+        updateMetricsDisplay();
+      }
+      return;
+    }
+  }
+
+  function onInput(){
+    if (finished) return;
+
+    if (!startedAt){
+      startedAt = performance.now();
+      startTimer();
+    }
+
+    const typed = normalizeNewlines(el.input.value);
+    const mode = el.mode.value;
+    const lang = el.lang.value;
+
+    typedChars = typed.length;
+    correctChars = 0;
+    score = 0;
+
+    const misses = el.adaptive.checked && mode === "symbols" ? loadMisses(lang) : null;
+
+    for (let i=0; i<typed.length; i++){
+      const tc = typed[i];
+      const pc = target[i];
+
+      if (pc !== undefined && tc === pc){
+        correctChars++;
+        score++;
+      } else {
+        if (misses && pc !== undefined){
+          misses[pc] = (misses[pc] || 0) + 1;
+        }
+      }
+    }
+
+    if (misses){
+      saveMisses(lang, misses);
+    }
+
+    updateMetricsDisplay();
+    renderDiff();
+  }
+
+  /* =======================
+     EVENTS
+     ======================= */
+
+  el.btnNew.addEventListener("click", newPrompt);
+  el.btnRestart.addEventListener("click", restart);
+  el.btnClearHS.addEventListener("click", clearHS);
+
+  el.lang.addEventListener("change", newPrompt);
+  el.mode.addEventListener("change", newPrompt);
+
+  el.duration.addEventListener("change", () => {
+    remaining = parseInt(el.duration.value, 10);
+    el.stTime.textContent = String(remaining);
+    restart();
+  });
+
+  el.theme.addEventListener("change", setTheme);
+  el.adaptive.addEventListener("change", applyDifficultyLine);
+  el.strictNL.addEventListener("change", renderDiff);
+
+  el.input.addEventListener("keydown", onKeyDown);
+  el.input.addEventListener("input", onInput);
+
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "Escape"){
+      e.preventDefault();
+      restart();
+    }
+    if ((e.ctrlKey || e.metaKey) && e.key === "Enter"){
+      e.preventDefault();
+      newPrompt();
+    }
+  });
+
+  // init
+  setTheme();
+  newPrompt();
+})();
+</script>
+</body>
+</html>
