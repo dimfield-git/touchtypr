@@ -1,4 +1,5 @@
 # touchtypr
+<img width="1536" height="1024" alt="ChatGPT Image Mar 2, 2026, 12_26_47 AM" src="https://github.com/user-attachments/assets/7ca39244-9977-4d5f-ad19-4bb76a0ca11f" />
 
 A single-file, offline-first touch typing trainer tailored for programming.
 
