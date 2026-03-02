@@ -89,4 +89,4 @@ This makes it easy to host the latest while keeping a clean archive.
 
 ## License
 
-MIT (recommended). Add a `LICENSE` file if you want this to be explicit.
+MIT
